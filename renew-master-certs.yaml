@@ -1,0 +1,24 @@
+---
+- hosts: kube-master
+  tasks:
+    - name: Check if /etc/kubernetes/pki/etcd/ca.crt exists
+      stat:
+        path: "/etc/kubernetes/pki/etcd/ca.crt"
+      register: etcd_crt_exists
+
+    - name: renew all certs
+      ansible.builtin.script: update-kubeadm-cert.sh all
+      when: etcd_crt_exists.stat.exists
+
+    - name: renew master certs
+      ansible.builtin.script: update-kubeadm-cert.sh master
+      when: not etcd_crt_exists.stat.exists
+
+    - name: chcek master certs
+      shell: |
+        kubeadm alpha certs check-expiration  --config="/etc/kubernetes/kubeadm-config.yaml"
+      register: result
+
+    - name: show result
+      debug: var=result.stdout_lines verbosity=0
+

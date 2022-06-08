@@ -1,0 +1,13 @@
+---
+- hosts: kube-master
+  tasks:
+    - name: renew master token
+      shell: |
+        sudo kubeadm token create
+      register: result
+    - name: solve result
+      become: false
+      copy:
+        content: "{{ result.stdout }}"
+        dest: "./token"
+      delegate_to: localhost

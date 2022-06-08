@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: renew worker certs
+      shell: |
+        systemctl stop kubelet
+        rm /etc/kubernetes/kubelet.conf
+        rm /var/lib/kubelet/pki/*
+        sed -i "s/token: .*/token: {{ token }}/" /etc/kubernetes/bootstrap-kubelet.conf
+        systemctl start kubelet
+
